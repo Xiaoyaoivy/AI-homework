@@ -7,39 +7,34 @@
 #include <string>
 using namespace std;
 
-//ÒıÈëopencvÖĞµÄÍ·ÎÄ¼ş
+//å¼•å…¥opencvä¸­çš„å¤´æ–‡ä»¶
 #include <cv.h>   
 #include <highgui.h> 
 
 
-//È«¾Ö±äÁ¿
+//å…¨å±€å˜é‡
 unsigned char *m_pframe;
 unsigned char *m_pgray;
 unsigned char *m_pResult;
 unsigned char *m_pfilter;
 
-//unsigned char *m_psobel;
-//unsigned char *m_proberts;
-//unsigned char *m_pprewitt;
-//unsigned char *m_plaplacian;
-
 char *pDstFrame,*Gray;
 int *m_pGradX,*m_pGradY,*m_pMag;
-int width,height,channel;//Ó°Ïñ³¤¶È£¬¿í¶È£¬Í¨µÀÊı
-double sigma = 0.4;//±ê×¼²î
-double ratLow = 0.5;//µÍãĞÖµ
-double ratHigh = 0.79;//¸ßãĞÖµ
+int width,height,channel;//å½±åƒé•¿åº¦ï¼Œå®½åº¦ï¼Œé€šé“æ•°
+double sigma = 0.4;//æ ‡å‡†å·®
+double ratLow = 0.5;//ä½é˜ˆå€¼
+double ratHigh = 0.79;//é«˜é˜ˆå€¼
 
-CvCapture *capture = cvCreateFileCapture("D:\\VideoData\\camera.avi");  //´´½¨Ö¸Õëcapture£¬Ê¹ÆäÖ¸Ïò½á¹¹ÌåCVCapture£¬ÇÒ½á¹¹ÌåCVCapture°üº¬ÁËÊÓÆµĞÅÏ¢
+CvCapture *capture = cvCreateFileCapture("D:\\VideoData\\camera.avi");  //åˆ›å»ºæŒ‡é’ˆcaptureï¼Œä½¿å…¶æŒ‡å‘ç»“æ„ä½“CVCaptureï¼Œä¸”ç»“æ„ä½“CVCaptureåŒ…å«äº†è§†é¢‘ä¿¡æ¯
 
-//º¯ÊıÉùÃ÷
+//å‡½æ•°å£°æ˜
 void RGBtoGray();
 
 void Sobel();
 void Roberts();
 void Prewitt();
 void Laplacian();
-void Canny();//CannyËã×Ó
+void Canny();//Cannyç®—å­
 
 int MyRoberts();
 int MySobel();
@@ -47,32 +42,32 @@ int MyPrewitt();
 int MyLaplacian();
 int MyCanny();
 
-void CreatGauss(double sigma, double **pdKernel, int *pnWidowSize);//²úÉúÒ»Î¬¸ßË¹Êı¾İ
-void GaussianSmooth();//¶ÔÍ¼Ïñ¸ßË¹Æ½»¬
-void Grad();//·½Ïòµ¼Êı,ÇóÌİ¶È
-void NonmaxSuppress();//·Ç¼«´óÖµÒÖÖÆ±£Áô
-void Hysteresis();//ÀûÓÃº¯ÊıÑ°ÕÒ±ß½çÆğµã
-void EstimateThreshold(int *pThrHigh, int *pThrLow);//Í³¼Æµ±Ç°Í¼ÏñÖ±·½Í¼£¬ÅĞ¶¨ãĞÖµ
-void TraceEdge(int y, int x, int nThrLow);//ÓÃÀ´±ß½ç¸ú×Ù
-void noTraceEdge(int y,int x,int nLowThd);//·Çµİ¹é
+void CreatGauss(double sigma, double **pdKernel, int *pnWidowSize);//äº§ç”Ÿä¸€ç»´é«˜æ–¯æ•°æ®
+void GaussianSmooth();//å¯¹å›¾åƒé«˜æ–¯å¹³æ»‘
+void Grad();//æ–¹å‘å¯¼æ•°,æ±‚æ¢¯åº¦
+void NonmaxSuppress();//éæå¤§å€¼æŠ‘åˆ¶ä¿ç•™
+void Hysteresis();//åˆ©ç”¨å‡½æ•°å¯»æ‰¾è¾¹ç•Œèµ·ç‚¹
+void EstimateThreshold(int *pThrHigh, int *pThrLow);//ç»Ÿè®¡å½“å‰å›¾åƒç›´æ–¹å›¾ï¼Œåˆ¤å®šé˜ˆå€¼
+void TraceEdge(int y, int x, int nThrLow);//ç”¨æ¥è¾¹ç•Œè·Ÿè¸ª
+void noTraceEdge(int y,int x,int nLowThd);//éé€’å½’
 
 /*
-   Ö÷º¯Êı
+   ä¸»å‡½æ•°
    input:None
    output:return 0 
 */
 int main()  
 {  
 	int enter;
-	cout<<"Performing Edge Detection Algorithm"<<endl; //ÌáÊ¾³ÌĞò¼ÌĞøÔËĞĞ»òÍË³ö
-	Sleep(2000);//ÔİÍ£Á½Ãë
-	system("cls");//ÇåÆÁ
-	cout<<"Please Choose the Edge Detection Algorithm£º"<<"\n"<<endl;
-	cout<<"1¡¢Roberts Edge Detection Algorithm "<<endl;//RobertsËã×Ó
-	cout<<"2¡¢Prewitt Edge Detection Algorithm "<<endl;//PrewittËã×Ó
-	cout<<"3¡¢Sobel Edge Detection Algorithm "<<endl;//SobelËã×Ó
-	cout<<"4¡¢Laplacian Edge Detection Algorithm "<<endl;//LaplacianËã×Ó
-	cout<<"5¡¢Canny Edge Detection Algorithm "<<endl;//CannyËã×Ó
+	cout<<"Performing Edge Detection Algorithm"<<endl; //æç¤ºç¨‹åºç»§ç»­è¿è¡Œæˆ–é€€å‡º
+	Sleep(2000);//æš‚åœä¸¤ç§’
+	system("cls");//æ¸…å±
+	cout<<"Please Choose the Edge Detection Algorithmï¼š"<<"\n"<<endl;
+	cout<<"1ã€Roberts Edge Detection Algorithm "<<endl;//Robertsç®—å­
+	cout<<"2ã€Prewitt Edge Detection Algorithm "<<endl;//Prewittç®—å­
+	cout<<"3ã€Sobel Edge Detection Algorithm "<<endl;//Sobelç®—å­
+	cout<<"4ã€Laplacian Edge Detection Algorithm "<<endl;//Laplacianç®—å­
+	cout<<"5ã€Canny Edge Detection Algorithm "<<endl;//Cannyç®—å­
 	
 	cout<<"Enter your choice:";
 	cin>>enter;
@@ -147,14 +142,14 @@ int MySobel()
 	IplImage *frame = NULL;	
 	while(1)
 	{
-		frame = cvQueryFrame(capture);//´ÓÎÄ¼şÖĞ×¥È¡Ò»Ö¡È»ºó½âÑ¹²¢·µ»ØÕâÒ»Ö¡¡£
+		frame = cvQueryFrame(capture);//ä»æ–‡ä»¶ä¸­æŠ“å–ä¸€å¸§ç„¶åè§£å‹å¹¶è¿”å›è¿™ä¸€å¸§ã€‚
 		if (!frame)
 			break;
-		width = (*frame).width;//¿í¶È
-		height =(*frame).height;//¸ß¶È
-		channel = (*frame).nChannels;//Í¨µÀÊı
+		width = (*frame).width;//å®½åº¦
+		height =(*frame).height;//é«˜åº¦
+		channel = (*frame).nChannels;//é€šé“æ•°
 		m_pframe = new unsigned char [(*frame).height * (*frame).width * (*frame).nChannels];
-		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//°Ñ×ÊÔ´ÄÚ´æ£¨srcËùÖ¸ÏòµÄÄÚ´æÇøÓò£©¿½±´µ½Ä¿±êÄÚ´æ
+		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//æŠŠèµ„æºå†…å­˜ï¼ˆsrcæ‰€æŒ‡å‘çš„å†…å­˜åŒºåŸŸï¼‰æ‹·è´åˆ°ç›®æ ‡å†…å­˜
 		Sobel();
 		IplImage* frame_Sobel = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		(*frame_Sobel).imageData = pDstFrame;
@@ -174,7 +169,7 @@ int MySobel()
 void Sobel()
 {
 	pDstFrame = new char[width*height];
-	RGBtoGray();        /////»Ò¶È»¯
+	RGBtoGray();        /////ç°åº¦åŒ–
 	for(int i = 1; i < height-1; i++)
 		for(int j = 1; j < width-1; j++)
 		{
@@ -195,14 +190,14 @@ int MyRoberts()
 	IplImage *frame = NULL;	
 	while(1)
 	{
-		frame = cvQueryFrame(capture);//´ÓÎÄ¼şÖĞ×¥È¡Ò»Ö¡È»ºó½âÑ¹²¢·µ»ØÕâÒ»Ö¡¡£
+		frame = cvQueryFrame(capture);//ä»æ–‡ä»¶ä¸­æŠ“å–ä¸€å¸§ç„¶åè§£å‹å¹¶è¿”å›è¿™ä¸€å¸§ã€‚
 		if (!frame)
 			break;
-		width = (*frame).width;//¿í¶È
-		height =(*frame).height;//¸ß¶È
-		channel = (*frame).nChannels;//Í¨µÀÊı
+		width = (*frame).width;//å®½åº¦
+		height =(*frame).height;//é«˜åº¦
+		channel = (*frame).nChannels;//é€šé“æ•°
 		m_pframe = new unsigned char [(*frame).height * (*frame).width * (*frame).nChannels];
-		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//°Ñ×ÊÔ´ÄÚ´æ£¨srcËùÖ¸ÏòµÄÄÚ´æÇøÓò£©¿½±´µ½Ä¿±êÄÚ´æ
+		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//æŠŠèµ„æºå†…å­˜ï¼ˆsrcæ‰€æŒ‡å‘çš„å†…å­˜åŒºåŸŸï¼‰æ‹·è´åˆ°ç›®æ ‡å†…å­˜
 		Roberts();
 		IplImage* frame_Roberts = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		(*frame_Roberts).imageData = pDstFrame;
@@ -222,7 +217,7 @@ int MyRoberts()
 void Roberts()
 {
 	pDstFrame = new char[width*height];
-	RGBtoGray();        //»Ò¶È»¯
+	RGBtoGray();        //ç°åº¦åŒ–
 	for(int i = 1; i < height-1; i++)
 		for(int j = 1; j < width-1; j++)
 		{
@@ -242,14 +237,14 @@ int MyPrewitt()
 	IplImage *frame = NULL;	
 	while(1)
 	{
-		frame = cvQueryFrame(capture);//´ÓÎÄ¼şÖĞ×¥È¡Ò»Ö¡È»ºó½âÑ¹²¢·µ»ØÕâÒ»Ö¡¡£
+		frame = cvQueryFrame(capture);//ä»æ–‡ä»¶ä¸­æŠ“å–ä¸€å¸§ç„¶åè§£å‹å¹¶è¿”å›è¿™ä¸€å¸§ã€‚
 		if (!frame)
 			break;
-		width = (*frame).width;//¿í¶È
-		height =(*frame).height;//¸ß¶È
-		channel = (*frame).nChannels;//Í¨µÀÊı
+		width = (*frame).width;//å®½åº¦
+		height =(*frame).height;//é«˜åº¦
+		channel = (*frame).nChannels;//é€šé“æ•°
 		m_pframe = new unsigned char [(*frame).height * (*frame).width * (*frame).nChannels];
-		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//°Ñ×ÊÔ´ÄÚ´æ£¨srcËùÖ¸ÏòµÄÄÚ´æÇøÓò£©¿½±´µ½Ä¿±êÄÚ´æ
+		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//æŠŠèµ„æºå†…å­˜ï¼ˆsrcæ‰€æŒ‡å‘çš„å†…å­˜åŒºåŸŸï¼‰æ‹·è´åˆ°ç›®æ ‡å†…å­˜
 		Prewitt();
 		IplImage* frame_Prewitt = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		(*frame_Prewitt).imageData = pDstFrame;
@@ -269,7 +264,7 @@ int MyPrewitt()
 void Prewitt()
 {
 	pDstFrame = new char[width*height];
-	RGBtoGray();//»Ò¶È»¯
+	RGBtoGray();//ç°åº¦åŒ–
 	for(int i = 1; i < height-1; i++)
 		for(int j = 1; j < width-1; j++)
 		{
@@ -302,14 +297,14 @@ int MyLaplacian()
 	IplImage *frame = NULL;	
 	while(1)
 	{
-		frame = cvQueryFrame(capture);//´ÓÎÄ¼şÖĞ×¥È¡Ò»Ö¡È»ºó½âÑ¹²¢·µ»ØÕâÒ»Ö¡¡£
+		frame = cvQueryFrame(capture);//ä»æ–‡ä»¶ä¸­æŠ“å–ä¸€å¸§ç„¶åè§£å‹å¹¶è¿”å›è¿™ä¸€å¸§ã€‚
 		if (!frame)
 			break;
-		width = (*frame).width;//¿í¶È
-		height =(*frame).height;//¸ß¶È
-		channel = (*frame).nChannels;//Í¨µÀÊı
+		width = (*frame).width;//å®½åº¦
+		height =(*frame).height;//é«˜åº¦
+		channel = (*frame).nChannels;//é€šé“æ•°
 		m_pframe = new unsigned char [(*frame).height * (*frame).width * (*frame).nChannels];
-		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//°Ñ×ÊÔ´ÄÚ´æ£¨srcËùÖ¸ÏòµÄÄÚ´æÇøÓò£©¿½±´µ½Ä¿±êÄÚ´æ
+		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//æŠŠèµ„æºå†…å­˜ï¼ˆsrcæ‰€æŒ‡å‘çš„å†…å­˜åŒºåŸŸï¼‰æ‹·è´åˆ°ç›®æ ‡å†…å­˜
 		Laplacian();
 		IplImage* frame_Laplacian = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		(*frame_Laplacian).imageData = pDstFrame;
@@ -330,7 +325,7 @@ int MyLaplacian()
 void Laplacian()
 {
 	pDstFrame = new char[width*height];
-	RGBtoGray();//»Ò¶È»¯
+	RGBtoGray();//ç°åº¦åŒ–
 	for(int i = 1; i < height-1; i++)
 		for(int j = 1; j < width-1; j++)
 		{
@@ -354,9 +349,9 @@ void Laplacian()
 
 
  /*
-	CannyËã×ÓÄ£°æ
-	input:»Ò¶ÈÍ¼Ïñ
-	output£ºÓëÄ£°æ½øĞĞ¾í»ıºóµÄÍ¼Ïñ
+	Cannyç®—å­æ¨¡ç‰ˆ
+	input:ç°åº¦å›¾åƒ
+	outputï¼šä¸æ¨¡ç‰ˆè¿›è¡Œå·ç§¯åçš„å›¾åƒ
 */
 void Canny()
 {
@@ -367,23 +362,23 @@ void Canny()
 	m_pResult = new unsigned char[width*height];
 	m_pgray = new unsigned char[height*width];
 	RGBtoGray();
-	GaussianSmooth();//¸ßË¹ÂË²¨
-	Grad();//ÇóÌİ¶È
-	NonmaxSuppress();//·Ç¼«´óÖµÒÖÖÆ
-	Hysteresis();//Ë«ãĞÖµ¼ì²â
-	delete []m_pGradX;//ÊÍ·ÅÖ¸Õë
+	GaussianSmooth();//é«˜æ–¯æ»¤æ³¢
+	Grad();//æ±‚æ¢¯åº¦
+	NonmaxSuppress();//éæå¤§å€¼æŠ‘åˆ¶
+	Hysteresis();//åŒé˜ˆå€¼æ£€æµ‹
+	delete []m_pGradX;//é‡Šæ”¾æŒ‡é’ˆ
 	delete []m_pGradY;
 	delete []m_pMag;
 	for(int i = 0; i < height; i++)
 		for(int j = 0; j < width; j++)
 		{
-			pDstFrame[i*width+j] =(char)m_pResult[i*width+j];//Êä³ö½á¹û
+			pDstFrame[i*width+j] =(char)m_pResult[i*width+j];//è¾“å‡ºç»“æœ
 		}
 
 }
 
 
-//CannyËã×Ó
+//Cannyç®—å­
 int MyCanny()
 {
 	cvNamedWindow("Original_Video", CV_WINDOW_AUTOSIZE);
@@ -402,22 +397,22 @@ int MyCanny()
 
 	while(1)
 	{
-		frame = cvQueryFrame(capture);//´ÓÎÄ¼şÖĞ×¥È¡Ò»Ö¡È»ºó½âÑ¹²¢·µ»ØÕâÒ»Ö¡¡£
+		frame = cvQueryFrame(capture);//ä»æ–‡ä»¶ä¸­æŠ“å–ä¸€å¸§ç„¶åè§£å‹å¹¶è¿”å›è¿™ä¸€å¸§ã€‚
 		if (!frame)
 			break;
 		cvShowImage("Original_Video", frame);
 
-		width = (*frame).width;//¿í¶È
-		height =(*frame).height;//¸ß¶È
-		channel = (*frame).nChannels;//Í¨µÀÊı
+		width = (*frame).width;//å®½åº¦
+		height =(*frame).height;//é«˜åº¦
+		channel = (*frame).nChannels;//é€šé“æ•°
 		m_pframe = new unsigned char [(*frame).height * (*frame).width * (*frame).nChannels];
-		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//°Ñ×ÊÔ´ÄÚ´æ£¨srcËùÖ¸ÏòµÄÄÚ´æÇøÓò£©¿½±´µ½Ä¿±êÄÚ´æ
+		memcpy(m_pframe,(*frame).imageData,(*frame).imageSize);//æŠŠèµ„æºå†…å­˜ï¼ˆsrcæ‰€æŒ‡å‘çš„å†…å­˜åŒºåŸŸï¼‰æ‹·è´åˆ°ç›®æ ‡å†…å­˜
 
-		Canny();//cannyËã×Ó
+		Canny();//cannyç®—å­
 
 		IplImage* frame_Canny = cvCreateImage(cvGetSize(frame),IPL_DEPTH_8U,1);
 		(*frame_Canny).imageData = pDstFrame;
-		//cvCanny(Dst_iplFrame,cCanny,50,150,3.0);//³ÌĞò×Ô´øµÄcvCannyËã·¨
+		//cvCanny(Dst_iplFrame,cCanny,50,150,3.0);//ç¨‹åºè‡ªå¸¦çš„cvCannyç®—æ³•
 		cvShowImage("Canny_Video",frame_Canny);
 
 		char c = cvWaitKey(33);
@@ -437,35 +432,35 @@ int MyCanny()
 
 void CreatGauss(double sigma, double **pdKernel, int *pnWidowSize)
 {
-	int nCenter;//Êı×éÖĞĞÄµã
-	double dDis;//Êı×éÖĞÒ»µãµ½ÖĞĞÄµã¾àÀë
-	//ÖĞ¼ä±äÁ¿
+	int nCenter;//æ•°ç»„ä¸­å¿ƒç‚¹
+	double dDis;//æ•°ç»„ä¸­ä¸€ç‚¹åˆ°ä¸­å¿ƒç‚¹è·ç¦»
+	//ä¸­é—´å˜é‡
 	double dValue;
 	double dSum;
 	long i;
 	dSum = 0;
-	//[-3*sigma,3*sigma] ÒÔÄÚÊı¾İ£¬»á¸²¸Ç¾ø´ó²¿·ÖÂË²¨ÏµÊı
+	//[-3*sigma,3*sigma] ä»¥å†…æ•°æ®ï¼Œä¼šè¦†ç›–ç»å¤§éƒ¨åˆ†æ»¤æ³¢ç³»æ•°
 	//dim = 1 + 2 * ((int) (3.0 * sigma))
 	*pnWidowSize = 1+ 2*ceil(3*sigma);
 
 	nCenter = (*pnWidowSize)/2;
 	*pdKernel = new double[*pnWidowSize];
 
-	//Éú³É¸ßË¹Êı¾İ
+	//ç”Ÿæˆé«˜æ–¯æ•°æ®
 	for(i=0;i<(*pnWidowSize);i++)
 	{
 		dDis = double(i - nCenter);
 		/*
 		        1
-		K=    ¡ª¡ª¡ª  e ^ [-(x*x)/2¦Ä/¦Ä]
-			  /2¦Ğ¦Ä 
+		K=    â€”â€”â€”  e ^ [-(x*x)/2Î´/Î´]
+			  /2Ï€Î´ 
 		*/
 		dValue = exp(-(0.5)*dDis*dDis/(sigma*sigma))/(sqrt(2*3.1415926)*sigma);
 		(*pdKernel)[i] = dValue;
 		dSum+=dValue;
 
 	}
-	//¹éÒ»»¯
+	//å½’ä¸€åŒ–
 	for(i=0;i<(*pnWidowSize);i++)
 	{
 		(*pdKernel)[i]/=dSum;
@@ -473,31 +468,31 @@ void CreatGauss(double sigma, double **pdKernel, int *pnWidowSize)
 
 }
 
-void GaussianSmooth()//¸ßË¹ÂË²¨
+void GaussianSmooth()//é«˜æ–¯æ»¤æ³¢
 {
 	long x,y,i;
-	int windowSize;//¸ßË¹ÂË²¨Æ÷³¤¶È
-	int nlen; //´°¿Ú³¤¶È
+	int windowSize;//é«˜æ–¯æ»¤æ³¢å™¨é•¿åº¦
+	int nlen; //çª—å£é•¿åº¦
 
-	double *pKernel; //Ò»Î¬¸ßË¹ÂË²¨Æ÷
-	double dotMut; //¸ßË¹ÏµÊıÓëÍ¼ÏñÊı¾İµÄµã³Ë
-	double weightSum; //ÂË²¨ÏµÊı×ÜºÍ
+	double *pKernel; //ä¸€ç»´é«˜æ–¯æ»¤æ³¢å™¨
+	double dotMut; //é«˜æ–¯ç³»æ•°ä¸å›¾åƒæ•°æ®çš„ç‚¹ä¹˜
+	double weightSum; //æ»¤æ³¢ç³»æ•°æ€»å’Œ
 	double *pTemp;
 	pTemp = new double[width*height];
 	m_pfilter = new unsigned char[width*height];
-	//²úÉúÒ»Î¬¸ßË¹Êı¾İ
-	CreatGauss(sigma, &pKernel, &windowSize);//´´½¨Ò»Î¬¸ßË¹
+	//äº§ç”Ÿä¸€ç»´é«˜æ–¯æ•°æ®
+	CreatGauss(sigma, &pKernel, &windowSize);//åˆ›å»ºä¸€ç»´é«˜æ–¯
 	nlen = windowSize/2;
 
-	//X·½ÏòÂË²¨
+	//Xæ–¹å‘æ»¤æ³¢
 	for(y = 0; y < height; y++)
 		for(x= 0; x < width; x++)
 		{
-			//³õÊ¼»¯²ÎÊı
+			//åˆå§‹åŒ–å‚æ•°
 			dotMut = 0;
 			weightSum = 0;
 			for(i = -nlen; i <= nlen; i++)
-			{   //ÅĞ¶ÏÊÇ·ñÔÚÍ¼ÏñÄÚ²¿
+			{   //åˆ¤æ–­æ˜¯å¦åœ¨å›¾åƒå†…éƒ¨
 				if((i+x)>=0 && (i+x)<width)
 				{
 					dotMut+=(double)m_pgray[y*width+(i+x)] * pKernel[nlen+i];
@@ -508,11 +503,11 @@ void GaussianSmooth()//¸ßË¹ÂË²¨
 			pTemp[y*width+x] = dotMut/weightSum;
 		}
 
-	//Y·½ÏòÂË²¨
+	//Yæ–¹å‘æ»¤æ³¢
 	for(x= 0; x < width; x++)                      
 		for(y = 0; y < height; y++)
 		{
-			//³õÊ¼»¯²ÎÊı
+			//åˆå§‹åŒ–å‚æ•°
 			dotMut = 0;
 			weightSum = 0;
 			for(i = -nlen; i <= nlen; i++)
@@ -534,7 +529,7 @@ void GaussianSmooth()//¸ßË¹ÂË²¨
 
 }
 
-// ·½Ïòµ¼Êı,ÇóÌİ¶È
+// æ–¹å‘å¯¼æ•°,æ±‚æ¢¯åº¦
 /*
 	Sx = [ -1 1      Sy = [  1  1
 	       -1 1 ]           -1 -1 ]
@@ -542,7 +537,7 @@ void GaussianSmooth()//¸ßË¹ÂË²¨
 void Grad()
 {
 	 long x,y;
-	 //x·½ÏòµÄ·½Ïòµ¼Êı
+	 //xæ–¹å‘çš„æ–¹å‘å¯¼æ•°
 	 for(y=1;y<height-1;y++)
 	 {
 		 for(x=1;x<width-1;x++)
@@ -551,7 +546,7 @@ void Grad()
 		 }
 	 }
 
-	 //y·½Ïò·½Ïòµ¼Êı
+	 //yæ–¹å‘æ–¹å‘å¯¼æ•°
 	 for(x=1;x<width-1;x++)
 	 {
 		 for(y=1;y<height-1;y++)
@@ -567,26 +562,26 @@ void Grad()
 	 {
 		 for(x=0; x<width; x++)
 		 {
-			 //¶ş½×·¶ÊıÇóÌİ¶È
-			 dSqt1 = m_pGradX[y*width + x]*m_pGradX[y*width + x];//ÇóX·½ÏòÌİ¶È
-			 dSqt2 = m_pGradY[y*width + x]*m_pGradY[y*width + x];//ÇóY·½ÏòÌİ¶È£»
-			 m_pMag[y*width+x] = (int)(sqrt(dSqt1+dSqt2)+0.5);//+0.5ËÄÉáÎåÈë
+			 //äºŒé˜¶èŒƒæ•°æ±‚æ¢¯åº¦
+			 dSqt1 = m_pGradX[y*width + x]*m_pGradX[y*width + x];//æ±‚Xæ–¹å‘æ¢¯åº¦
+			 dSqt2 = m_pGradY[y*width + x]*m_pGradY[y*width + x];//æ±‚Yæ–¹å‘æ¢¯åº¦ï¼›
+			 m_pMag[y*width+x] = (int)(sqrt(dSqt1+dSqt2)+0.5);//+0.5å››èˆäº”å…¥
 		 }
 	 }
 
 }
 
-//·Ç¼«´óÖµÒÖÖÆ±£Áô
+//éæå¤§å€¼æŠ‘åˆ¶ä¿ç•™
 void NonmaxSuppress()
 {
 	long y,x;
 	int nPos;
-	int gx,gy;//Ìİ¶È·ÖÁ¿
-	int g1,g2,g3,g4;//ÖĞ¼ä±äÁ¿
+	int gx,gy;//æ¢¯åº¦åˆ†é‡
+	int g1,g2,g3,g4;//ä¸­é—´å˜é‡
 	double weight;
 	double dTmp,dTmp1,dTmp2;
 
-	//ÉèÖÃÍ¼Ïñ±ßÔµÎª²»¿ÉÄÜµÄ·Ö½çµã
+	//è®¾ç½®å›¾åƒè¾¹ç¼˜ä¸ºä¸å¯èƒ½çš„åˆ†ç•Œç‚¹
 	for(x=0;x<width;x++)
 	{
 		m_pResult[x] = 0;
@@ -602,33 +597,33 @@ void NonmaxSuppress()
 	for (y = 1; y < height-1; y++)
 		for(x =1; x < width-1; x++)
 		{
-			//µ±Ç°µã
+			//å½“å‰ç‚¹
 			nPos = y*width + x;
-			//Èç¹ûµ±Ç°ÏñËØÌİ¶È·ù¶ÈÎª0£¬Ôò²»ÊÇ±ß½çµã
+			//å¦‚æœå½“å‰åƒç´ æ¢¯åº¦å¹…åº¦ä¸º0ï¼Œåˆ™ä¸æ˜¯è¾¹ç•Œç‚¹
 			if(m_pMag[nPos] == 0)
 			{
 				m_pResult[nPos] = 0;
 			}
 			else
 			{
-				//µ±Ç°µãµÄÌİ¶È·ù¶È
+				//å½“å‰ç‚¹çš„æ¢¯åº¦å¹…åº¦
 				dTmp = m_pMag[nPos];
 
-				//x,y·½Ïòµ¼Êı
+				//x,yæ–¹å‘å¯¼æ•°
 				gx = m_pGradX[nPos];
 				gy = m_pGradY[nPos];
 
-				//Èç¹û·½Ïòµ¼Êıy·ÖÁ¿±Èx·ÖÁ¿´ó£¬ËµÃ÷µ¼Êı·½ÏòÇ÷ÏòÓÚy·ÖÁ¿
+				//å¦‚æœæ–¹å‘å¯¼æ•°yåˆ†é‡æ¯”xåˆ†é‡å¤§ï¼Œè¯´æ˜å¯¼æ•°æ–¹å‘è¶‹å‘äºyåˆ†é‡
 				if(abs(gy) > abs(gx))
 				{
-					//¼ÆËã²åÖµ±ÈÀı
+					//è®¡ç®—æ’å€¼æ¯”ä¾‹
 					weight = abs(gx)/abs(gy);
 
 					g2 = m_pMag[nPos-width];
 					g4 = m_pMag[nPos+width];
 
-					//Èç¹ûx,yÁ½¸ö·½Ïòµ¼ÊıµÄ·ûºÅÏàÍ¬
-                    //C Îªµ±Ç°ÏñËØ£¬Óëg1-g4 µÄÎ»ÖÃ¹ØÏµÎª£º
+					//å¦‚æœx,yä¸¤ä¸ªæ–¹å‘å¯¼æ•°çš„ç¬¦å·ç›¸åŒ
+                    //C ä¸ºå½“å‰åƒç´ ï¼Œä¸g1-g4 çš„ä½ç½®å…³ç³»ä¸ºï¼š
                     //g1   g2
                     //     C
                     //     g4   g3
@@ -637,8 +632,8 @@ void NonmaxSuppress()
 						g1 = m_pMag[nPos-width-1];
 						g3 = m_pMag[nPos+width+1];
 					}
-					//Èç¹ûx,yÁ½¸ö·½ÏòµÄ·½Ïòµ¼Êı·½ÏòÏà·´
-                    //CÊÇµ±Ç°ÏñËØ£¬Óëg1-g4µÄ¹ØÏµÎª£º
+					//å¦‚æœx,yä¸¤ä¸ªæ–¹å‘çš„æ–¹å‘å¯¼æ•°æ–¹å‘ç›¸å
+                    //Cæ˜¯å½“å‰åƒç´ ï¼Œä¸g1-g4çš„å…³ç³»ä¸ºï¼š
                     //      g2   g1
                     //      C
                     //g3   g4
@@ -649,7 +644,7 @@ void NonmaxSuppress()
 					}
 
 				}
-				//Èç¹û·½Ïòµ¼Êıx·ÖÁ¿±Èy·ÖÁ¿´ó£¬ËµÃ÷µ¼ÊıµÄ·½ÏòÇ÷ÏòÓÚx·ÖÁ¿
+				//å¦‚æœæ–¹å‘å¯¼æ•°xåˆ†é‡æ¯”yåˆ†é‡å¤§ï¼Œè¯´æ˜å¯¼æ•°çš„æ–¹å‘è¶‹å‘äºxåˆ†é‡
 				else
 				{
 					weight = abs(gy)/abs(gx);
@@ -657,8 +652,8 @@ void NonmaxSuppress()
 					g2 = m_pMag[nPos+1];
 					g4 = m_pMag[nPos-1];
 
-					//Èç¹ûx,yÁ½¸ö·½ÏòµÄ·½Ïòµ¼Êı·ûºÅÏàÍ¬
-                    //µ±Ç°ÏñËØCÓë g1-g4µÄ¹ØÏµÎª
+					//å¦‚æœx,yä¸¤ä¸ªæ–¹å‘çš„æ–¹å‘å¯¼æ•°ç¬¦å·ç›¸åŒ
+                    //å½“å‰åƒç´ Cä¸ g1-g4çš„å…³ç³»ä¸º
                     //        g3
                     // g4  C  g2
                     // g1
@@ -667,8 +662,8 @@ void NonmaxSuppress()
 						g1 = m_pMag[nPos+width+1];
 						g3 = m_pMag[nPos-width-1];
 					}
-					//Èç¹ûx,yÁ½¸ö·½Ïòµ¼ÊıµÄ·½ÏòÏà·´
-                    // CÓëg1-g4µÄ¹ØÏµÎª
+					//å¦‚æœx,yä¸¤ä¸ªæ–¹å‘å¯¼æ•°çš„æ–¹å‘ç›¸å
+                    // Cä¸g1-g4çš„å…³ç³»ä¸º
                     //        g1
                     // g4  C  g2
                     // g3
@@ -679,21 +674,21 @@ void NonmaxSuppress()
 
 				}
 				
-				//weight = fabs(gx)/fabs(gy) = ctan(theta), thetaÎªÌİ¶È·½Ïò.
+				//weight = fabs(gx)/fabs(gy) = ctan(theta), thetaä¸ºæ¢¯åº¦æ–¹å‘.
 				//weight = |dTemp1-g2|/|g1-g2| = |dTemp1-g2|/|C-g2| = ctan(theta); 
 
 				dTmp1 = weight*g1 + (1-weight)*g2;
 				dTmp2 = weight*g3 + (1-weight)*g4;
 
-				//µ±Ç°ÏñËØµÄÌİ¶ÈÊÇ¾Ö²¿µÄ×î´óÖµ
-				//¸Ãµã¿ÉÄÜÊÇ±ß½çµã
+				//å½“å‰åƒç´ çš„æ¢¯åº¦æ˜¯å±€éƒ¨çš„æœ€å¤§å€¼
+				//è¯¥ç‚¹å¯èƒ½æ˜¯è¾¹ç•Œç‚¹
 				if(dTmp>=dTmp1 && dTmp>=dTmp2)
 				{
-					m_pResult[nPos] = 128;//ÊÇµ±Ç°µãµÄ»Ò¶ÈÖµ
+					m_pResult[nPos] = 128;//æ˜¯å½“å‰ç‚¹çš„ç°åº¦å€¼
 				}
 				else
 				{
-					//²»¿ÉÄÜÊÇ±ß½çµã
+					//ä¸å¯èƒ½æ˜¯è¾¹ç•Œç‚¹
 					m_pResult[nPos] = 0;
 				}
 			
@@ -704,20 +699,20 @@ void NonmaxSuppress()
 
 
 
-//ÅĞ¶¨ãĞÖµ
+//åˆ¤å®šé˜ˆå€¼
 void EstimateThreshold(int *pThrHigh, int *pThrLow)
 {
 	long y,x,k;
-	int nHist[256]; //¿ÉÄÜ±ß½çÊı
-	int nEdgeNum;//×î´óÌİ¶ÈÊı
+	int nHist[256]; //å¯èƒ½è¾¹ç•Œæ•°
+	int nEdgeNum;//æœ€å¤§æ¢¯åº¦æ•°
 	int nMaxMag = 0;
 	int nHighCount;
-	//³õÊ¼»¯
+	//åˆå§‹åŒ–
 	for(k=0;k<256;k++)
 	{
 		nHist[k] = 0;
 	}
-	//Í³¼ÆÖ±·½Í¼,ÀûÓÃÖ±·½Í¼¼ÆËããĞÖµ
+	//ç»Ÿè®¡ç›´æ–¹å›¾,åˆ©ç”¨ç›´æ–¹å›¾è®¡ç®—é˜ˆå€¼
 	for(y=0;y<height;y++)
 	{
 		for(x=0;x<width;x++)
@@ -730,7 +725,7 @@ void EstimateThreshold(int *pThrHigh, int *pThrLow)
 	}
 	nEdgeNum = nHist[0];
 
-	//Í³¼Æ¾­¹ı¡°·Ç×î´óÖµÒÖÖÆ¡±ºóÓĞ¶àÉÙÏñËØ
+	//ç»Ÿè®¡ç»è¿‡â€œéæœ€å¤§å€¼æŠ‘åˆ¶â€åæœ‰å¤šå°‘åƒç´ 
 	for(k=1;k<256;k++)
 	{
 		if(nHist[k] != 0)
@@ -738,31 +733,31 @@ void EstimateThreshold(int *pThrHigh, int *pThrLow)
 			nMaxMag = k;
 		}
 
-		//Ìİ¶ÈÎª0µÄµãÊÇ²»¿ÉÄÜÎª±ß½çµãµÄ
-		//¾­¹ınon-maximum suppressionºóÓĞ¶àÉÙÏñËØ
+		//æ¢¯åº¦ä¸º0çš„ç‚¹æ˜¯ä¸å¯èƒ½ä¸ºè¾¹ç•Œç‚¹çš„
+		//ç»è¿‡non-maximum suppressionåæœ‰å¤šå°‘åƒç´ 
 		nEdgeNum += nHist[k];
 
 	}
-	//Ìİ¶È±È¸ßãĞÖµ*pThrHigh Ğ¡µÄÏñËØµã×ÜÊıÄ¿
+	//æ¢¯åº¦æ¯”é«˜é˜ˆå€¼*pThrHigh å°çš„åƒç´ ç‚¹æ€»æ•°ç›®
 	nHighCount = (int)(ratHigh * nEdgeNum + 0.5);
 	k=1;
 	nEdgeNum = nHist[1];
-	//¼ÆËã¸ßãĞÖµ
+	//è®¡ç®—é«˜é˜ˆå€¼
 	while((k<(nMaxMag-1)) && (nEdgeNum < nHighCount))
 	{
 		k++;
 		nEdgeNum += nHist[k];
 	}
 	*pThrHigh = k;
-	//µÍãĞÖµ=0.4¸ßãĞÖµ
-	*pThrLow = (int)((*pThrHigh) * ratLow + 0.5);//ËÄÉáÎåÈë
+	//ä½é˜ˆå€¼=0.4é«˜é˜ˆå€¼
+	*pThrLow = (int)((*pThrHigh) * ratLow + 0.5);//å››èˆäº”å…¥
 
 }
 
-//ÓÃÀ´±ß½ç¸ú×Ù
+//ç”¨æ¥è¾¹ç•Œè·Ÿè¸ª
 void TraceEdge(int y, int x, int nThrLow)
 {	 
-	//   ¶Ô8ÁÚÓòÏóËØ½øĞĞ²éÑ¯
+	//   å¯¹8é‚»åŸŸè±¡ç´ è¿›è¡ŒæŸ¥è¯¢
 	int xNum[8] = { 1,  1,  0,
 		           -1,     -1,
 				   -1,  0,  1};
@@ -775,23 +770,23 @@ void TraceEdge(int y, int x, int nThrLow)
 	{
 		y_y = y + yNum[k];
 		x_x = x + xNum[k];
-		//   Èç¹û¸ÃÏóËØÎª¿ÉÄÜµÄ±ß½çµã,ÓÖÃ»ÓĞ´¦Àí¹ı,²¢ÇÒÌİ¶È´óÓÚãĞÖµ 
+		//   å¦‚æœè¯¥è±¡ç´ ä¸ºå¯èƒ½çš„è¾¹ç•Œç‚¹,åˆæ²¡æœ‰å¤„ç†è¿‡,å¹¶ä¸”æ¢¯åº¦å¤§äºé˜ˆå€¼ 
 		if(m_pResult[y_y * width + x_x] == 128 && m_pMag[y_y * width + x_x] >= nThrLow )
 		{
-			//¸ÃµãÉèÎª±ß½çµã
+			//è¯¥ç‚¹è®¾ä¸ºè¾¹ç•Œç‚¹
 			m_pResult[y_y * width + x_x] = 255;
 
-			//ÒÔ¸ÃµãÎªÖĞĞÄÔÙ½øĞĞ¸ú×Ù
+			//ä»¥è¯¥ç‚¹ä¸ºä¸­å¿ƒå†è¿›è¡Œè·Ÿè¸ª
 			//TraceEdge(y_y,x_x,nThrLow);
 		TraceEdge(y_y,x_x,nThrLow);    
 		}
 	}
 }
 
-//·Çµİ¹éµ÷ÓÃ
+//éé€’å½’è°ƒç”¨
 void   noTraceEdge   (int  y,   int  x,   int  nLowThd)    
 	{    
-		//   ¶Ô8ÁÚÓòÏóËØ½øĞĞ²éÑ¯  
+		//   å¯¹8é‚»åŸŸè±¡ç´ è¿›è¡ŒæŸ¥è¯¢  
 		int   xNum[8]   =   {1,   1,   0,-1,-1,-1,   0,   1}   ;  
 		int   yNum[8]   =   {0,   1,   1,   1,0   ,-1,-1,-1}   ;  
 
@@ -807,17 +802,17 @@ void   noTraceEdge   (int  y,   int  x,   int  nLowThd)
 			{  
 				y_y   =   y   +   yNum[k]   ;  
 				x_x   =   x   +   xNum[k]   ;  
-				//   Èç¹û¸ÃÏóËØÎª¿ÉÄÜµÄ±ß½çµã£¬ÓÖÃ»ÓĞ´¦Àí¹ı  
-				//   ²¢ÇÒÌİ¶È´óÓÚãĞÖµ  
+				//   å¦‚æœè¯¥è±¡ç´ ä¸ºå¯èƒ½çš„è¾¹ç•Œç‚¹ï¼Œåˆæ²¡æœ‰å¤„ç†è¿‡  
+				//   å¹¶ä¸”æ¢¯åº¦å¤§äºé˜ˆå€¼  
 				if(m_pResult[y_y*width+x_x]   ==   128   &&   m_pMag[y_y*width+x_x]>=nLowThd)  
 				{  
 					change=true;
-					//   °Ñ¸ÃµãÉèÖÃ³ÉÎª±ß½çµã  
+					//   æŠŠè¯¥ç‚¹è®¾ç½®æˆä¸ºè¾¹ç•Œç‚¹  
 					m_pResult[y_y*width+x_x]   =   255   ;
 					y=y_y;
 					x=x_x;
 					break;
-					//   ÒÔ¸ÃµãÎªÖĞĞÄ½øĞĞ¸ú×Ù  
+					//   ä»¥è¯¥ç‚¹ä¸ºä¸­å¿ƒè¿›è¡Œè·Ÿè¸ª  
 					//TraceEdge(yy,   xx,   nLowThd,   pUnchEdge,   pnMag,   nWidth);  
 				}  
 			}  
@@ -826,14 +821,14 @@ void   noTraceEdge   (int  y,   int  x,   int  nLowThd)
 
 
 
-//ÀûÓÃº¯ÊıÑ°ÕÒ±ß½çÆğµã
+//åˆ©ç”¨å‡½æ•°å¯»æ‰¾è¾¹ç•Œèµ·ç‚¹
 void Hysteresis()
 {
 	long y,x;
 	int nThrHigh,nThrLow;
 	int nPos;
 
-	EstimateThreshold(&nThrHigh,&nThrLow);//ÅĞ¶ÏãĞÖµ
+	EstimateThreshold(&nThrHigh,&nThrLow);//åˆ¤æ–­é˜ˆå€¼
 
 	for(y=0;y<height;y++)
 	{
@@ -841,11 +836,11 @@ void Hysteresis()
 		{
 			nPos = y*width + x;
 
-			//Èç¹û¸ÃÏñËØÊÇ¿ÉÄÜµÄ±ß½çµã£¬²¢ÇÒÌİ¶È´óÓÚ¸ßãĞÖµ£¬
-			//¸ÃÏñËØ×÷ÎªÒ»¸ö±ß½çµÄÆğµã
+			//å¦‚æœè¯¥åƒç´ æ˜¯å¯èƒ½çš„è¾¹ç•Œç‚¹ï¼Œå¹¶ä¸”æ¢¯åº¦å¤§äºé«˜é˜ˆå€¼ï¼Œ
+			//è¯¥åƒç´ ä½œä¸ºä¸€ä¸ªè¾¹ç•Œçš„èµ·ç‚¹
 			if((m_pResult[nPos]==128) && (m_pMag[nPos] >= nThrHigh))
 			{
-				//ÉèÖÃ¸ÃµãÎª±ß½çµã
+				//è®¾ç½®è¯¥ç‚¹ä¸ºè¾¹ç•Œç‚¹
 				m_pResult[nPos] = 255;
 				noTraceEdge(y,x,nThrLow);
 			}
@@ -853,7 +848,7 @@ void Hysteresis()
 		}
 	}
 
-	//ÆäËûµãÒÑ¾­²»¿ÉÄÜÎª±ß½çµã
+	//å…¶ä»–ç‚¹å·²ç»ä¸å¯èƒ½ä¸ºè¾¹ç•Œç‚¹
 	for(y=0;y<height;y++)
 	{
 		for(x=0;x<width;x++)
